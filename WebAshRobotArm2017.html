@@ -1,0 +1,597 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="jquery-ui.css">    
+    <script src="jquery-1.12.4.js"></script>
+    <script src="jquery-ui.js"></script>
+    <script>
+    var isUserSliding = false;
+  $( function() {     
+    $( "#slider-vert" ).slider({
+        range: false,
+      min: 0,
+      max: 180,      
+      value: $("#vertServoAngleTxt").val(),
+      slide: function( event, ui ) {
+            isUserSliding = true;
+            $( "#vertServoAngleTxt" ).val( ui.value );
+            submitAllAngles();
+        },
+        stop: function (event, ui){
+            submitAllAngles();
+            isUserSliding = false;
+        }
+    });
+
+    $( "#slider-elbow" ).slider({
+            range: false,
+        min: 0,
+        max: 180,      
+        value: $("#elbowServoAngleTxt").val(),
+        slide: function( event, ui ) {
+            isUserSliding = true;
+            $( "#elbowServoAngleTxt" ).val( ui.value );
+            submitAllAngles();
+        },
+        stop: function (event, ui){
+            submitAllAngles();
+            isUserSliding = false;
+        }
+    });
+
+    $( "#slider-wrist" ).slider({
+            range: false,
+        min: 0,
+        max: 180,    
+        value: $("#wristServoAngleTxt").val(),  
+        slide: function( event, ui ) {
+            isUserSliding = true;
+            $( "#wristServoAngleTxt" ).val( ui.value );
+            submitAllAngles();
+        },
+        stop: function (event, ui){
+            submitAllAngles();
+            isUserSliding = false;
+        }
+    });
+
+    $( "#slider-base" ).slider({
+        range: false,
+      min: 0,
+      max: 180,  
+      value: $("#baseServoAngleTxt").val(),    
+      slide: function( event, ui ) {
+          isUserSliding = true;
+        $( "#baseServoAngleTxt" ).val( ui.value );
+        submitAllAngles();
+      },
+        stop: function (event, ui){
+            submitAllAngles();
+            isUserSliding = false;
+        }
+    });
+
+    $( "#slider-spin" ).slider({
+        range: false,
+      min: 0,
+      max: 180,  
+      value: $("#spinServoAngleTxt").val(),    
+      slide: function( event, ui ) {
+          isUserSliding = true;
+        $( "#spinServoAngleTxt" ).val( ui.value );
+        submitAllAngles();
+      },
+        stop: function (event, ui){
+            submitAllAngles();
+            isUserSliding = false;
+        }
+    });
+
+    $( "#slider-grip" ).slider({
+        range: false,
+      min: 0,
+      max: 180,  
+      value: $("#gripServoAngleTxt").val(),    
+      slide: function( event, ui ) {
+          isUserSliding = true;
+        $( "#gripServoAngleTxt" ).val( ui.value );
+        submitAllAngles();
+      },
+        stop: function (event, ui){
+            submitAllAngles();
+            isUserSliding = false;
+        }
+    });
+
+$( "#slider-dispenser" ).slider({
+        range: false,
+      min: 0,
+      max: 180,  
+      value: $("#dispenserServoAngleTxt").val(),    
+      slide: function( event, ui ) {
+          isUserSliding = true;
+        $( "#dispenserServoAngleTxt" ).val( ui.value );
+        submitAllAngles();
+      },
+        stop: function (event, ui){
+            submitAllAngles();
+            isUserSliding = false;
+        }
+    });
+
+    function submitAllAngles(){
+        
+	var responseData    = [        
+        {"baseAngle" : $("#baseServoAngleTxt").val()},
+        {"vertAngle" : $("#vertServoAngleTxt").val()},
+        {"elbowAngle" : $("#elbowServoAngleTxt").val()},
+        {"wristAngle" :  $("#wristServoAngleTxt").val()},
+        {"spinAngle" :  $("#spinServoAngleTxt").val()},
+        {"gripAngle" :  $("#gripServoAngleTxt").val()},
+        {"dispenserAngle" :  $("#dispenserServoAngleTxt").val()}
+    ];
+
+    $.ajax({
+        url: "/setServoAngle", success: function(result){
+            //$("#div1").html(result);
+            },
+        data: {responseData: responseData}   
+});
+
+
+    }
+
+function updateAllSliders()
+{
+    
+
+    $( "#slider-base" ).slider( "option", "value", $("#baseServoAngleTxt").val() );
+    $( "#slider-vert" ).slider( "option", "value", $("#vertServoAngleTxt").val() );
+    $( "#slider-elbow" ).slider( "option", "value", $("#elbowServoAngleTxt").val() );
+    $( "#slider-wrist" ).slider( "option", "value", $("#wristServoAngleTxt").val() );
+    $( "#slider-spin" ).slider( "option", "value", $("#spinServoAngleTxt").val() );
+    $( "#slider-grip" ).slider( "option", "value", $("#gripServoAngleTxt").val() );
+}
+
+function updateServoTextBox(servoValue, servoTextBox){
+        if (servoValue != servoTextBox.val())
+        {
+            servoTextBox.val(servoValue);
+            /*if (!servoTextBox.is(':focus'))
+            {
+                servoTextBox.val(servoValue);
+                servoTextBox.removeClass('userEditing');
+            }
+            else
+                servoTextBox.addClass('userEditing');*/
+        }
+  }
+
+    setInterval(function() {
+            var currTimerVal = $("#ResetTimerId").val();
+
+            // Fetch Data from server (Temperature etc)
+            $.ajax({
+                    url: "/getNewData", 
+                    success: function(result){
+                            var baseTemp = result[0]['baseTemp'];
+                            $("#BaseTemperatureId").val(baseTemp);
+                            var baseTemp2 = result[0]['baseTemp2'];
+                            
+                            $("#BaseTemperature2Id").val(baseTemp2);
+                            var servoBase = result[0]['servoBase'];
+                            
+                            var msgData = result[0]['msgData'];
+                            $("#MsgTxt").text(msgData);
+
+                            if (isUserSliding == true)
+                            {
+                                console.debug("Not updating sliders because user is dragging sliders...");
+                                return;  // Dont fight user to update slider value. Let me finish first.
+                            }
+
+                            var servoValue = result[0]['servoBase'];
+                            var servoTextBox = $("#baseServoAngleTxt");
+                            updateServoTextBox(servoValue, servoTextBox) 
+
+                            // No Slider for VERT-2 (its automatically kept in sync)
+                            servoValue = result[0]['servoVert'];
+                            servoTextBox = $("#vertServoAngleTxt");
+                            updateServoTextBox(servoValue, servoTextBox) 
+
+                            servoValue = result[0]['servoElbow'];
+                            servoTextBox = $("#elbowServoAngleTxt");
+                            updateServoTextBox(servoValue, servoTextBox) 
+
+                            servoValue = result[0]['wristServo'];
+                            servoTextBox = $("#wristServoAngleTxt");
+                            updateServoTextBox(servoValue, servoTextBox) 
+
+                            servoValue = result[0]['spinServo'];
+                            servoTextBox = $("#spinServoAngleTxt");
+                            updateServoTextBox(servoValue, servoTextBox) 
+
+                            servoValue = result[0]['gripServo'];
+                            servoTextBox = $("#gripServoAngleTxt");
+                            updateServoTextBox(servoValue, servoTextBox)                                                 
+
+                            updateAllSliders();
+                    }
+            }); 
+
+
+            if (currTimerVal === "0")
+                currTimerVal = "0-0-0";
+            var timeStr = currTimerVal.split("-");
+
+            var hour =  parseInt(timeStr[0]);
+            var minutes =  parseInt(timeStr[1]);
+            var seconds = parseInt(timeStr[2]);
+
+            var total = hour * 60 * 60 + minutes * 60 + seconds;
+            total ++;
+
+            var nextHour = parseInt(total / 3600);
+            var nextMin = parseInt( total  / 60);
+            var nextSec = parseInt(total %60);
+            
+            $( "#ResetTimerId" ).val(nextHour + "-" + nextMin + "-" + nextSec);
+        }, 1000);
+  } );
+  </script>
+</head>
+
+<body>
+    <style>
+        .prepBtn {
+            background-color: lightgreen;
+            height: 50px;
+            margin-left: 0px;
+        }
+
+        .actionBtn {
+            background-color: orange;
+            height: 50px;
+        }
+        .correctionBtn {
+            background-color: purple;
+            color: white;
+            height: 50px;
+        }
+        
+        .hitBtn {
+            background-color: red;
+            height: 50px;
+            margin-left: 0px;
+        }
+        
+        .dragBtn {
+            background-color: orange;
+            height: 50px;
+            margin-left: 0px;
+        }
+        
+        .swipeBtn {
+            background-color: lightpink;
+            height: 30px;
+            margin-left: 0px;
+        }
+        
+        .homeBtn {
+            background-color: #DC7633;
+            height: 75px;
+            width: 150px;
+            margin-left: 0px;
+        }
+        
+        .servoAngleBtn {
+            background-color: lightblue;
+            height: 30px;
+            margin-top: 0px;
+            margin-right: 60px;
+        }
+        .targetBtn {
+            background-color: yellow;
+            height: 30px;
+            margin-top: 0px;
+            margin-right: 10px;
+        }
+        
+        .powerOffBtn {
+            background-color: red;
+            height: 50px;
+        }
+        
+        .powerOnBtn {
+            background-color: green;
+            height: 50px;
+        }
+        
+        .powerTbl {
+            margin-top: 50px;
+        }
+        
+        .UnitBtn {
+            background-color: yellow;
+            height: 50px;
+        }
+        
+        #RefreshBtn {
+            background-color: lightblue;
+            height: 30px;
+        }
+        
+        .angleTxt {
+            height: 50px;
+            width: 50px;
+            background-color: lightyellow;
+            pointer-events: none;  /* READONLY */
+        }
+        
+        .angleTbl {
+            margin: 50px
+        }
+        
+        .UnitTable {
+            margin-left: 200px;
+        }
+        
+        .sliders-horiz {
+            width: 400px
+        }
+        
+        #ResetTimerId {
+            font-size: 250%;
+            background-color: lightyellow;
+            pointer-events: none;  /* READONLY */
+        }
+        
+        .Temperature {
+            font-size: 250%;
+            background-color: lightyellow;
+            pointer-events: none;  /* READONLY */
+        }
+
+        .userEditing {
+            background-color: red;
+        }
+    </style>
+    <h1>Ashray's Robot Arm Controller (West Windsor High School South)</h1>
+    <form method="POST" lpformnum="1">
+        <table class="outer">
+            <tbody>
+                <tr>
+                    <td>
+                        <table> 
+                            <tbody>
+                                <tr>
+                                    <td colspan="3"><input type="input" value="VAR_CURRENT_TIME_ELAPSED" name="CurrentTime" class="resetTimer"
+                                            id="ResetTimerId" size="6" align="center" /></td>
+                                    
+                                    <td colspan="2" align='center'> <input type="submit" value="NORTH-PREP" name="Btn" class="prepBtn"> </td>
+                                    <!-- td> <input type="submit" value="NORTH-HIT" name="Btn" class="hitBtn"> </td -->
+                                    <td> </td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td> </td>
+                                    <td> </td>
+                                    <!-- td colspan="3" align="center"> <input type="submit" value="NORTH-SWIPE-DOWN" name="Btn" class="swipeBtn"> </td -->
+                                    <td> </td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td > </td>                                    
+                                    <td > </td>
+                                    <td > </td>
+                                    <td>  </td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="5"> <input type="submit" value="WEST-PREP" name="Btn" class="prepBtn"> </td>
+                                    <!-- td> <input type="submit" value="WEST-HIT" name="Btn" class="hitBtn"> </td -->
+                                    <td> </td>
+                                    <td> </td>
+                                    
+                                    <td align='center' colspan="2"> <input type="submit" value="TARGET-5" name="Btn" class="targetBtn"> </td>
+                                    <td> </td>
+                                    <td> </td>
+                                    <td rowspan="5"> <input type="submit" value="EAST-PREP" name="Btn" class="prepBtn"> </td>
+                                    <!-- td> <input type="submit" value="EAST-HIT" name="Btn" class="hitBtn"> </td -->
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td> </td>
+                                    <td> </td>
+                                    <td align='center'  colspan="2"> <input type="submit" value="TARGET-4" name="Btn" class="targetBtn"> </td>                                                                                                            
+                                    <td> </td>
+                                </tr>
+                                <tr>                                    
+                                    <td> </td>
+                                    <td> </td>                                    
+                                    <td align='center'  colspan="2"> <input type="submit" value="TARGET-3" name="Btn" class="targetBtn"> </td>                                                                        
+                                    <td> </td>
+                                </tr>
+                                <tr>                                    
+                                    <td> </td>
+                                    <td> </td>                                    
+                                    <td align='center'  colspan="2"> <input type="submit" value="TARGET-2" name="Btn" class="targetBtn"> </td>                                                                        
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td> </td>
+                                    <td> </td>
+                                    <td align='center'  colspan="2"> <input type="submit" value="TARGET-1" name="Btn" class="targetBtn"> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td> </td>
+                                    <td> </td>
+                                    <td> </td>
+                                    <td  > <input type="submit" value="SOUTH-PREP" name="Btn" class="prepBtn"> </td>
+                                    <td  > <input type="submit" value="SOUTH-UNRAVEL" name="Btn" class="correctionBtn"> </td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td> </td>
+                                    <td> </td>
+                                    <!-- td colspan="2" align="center"> <input type="submit" value="SOUTH-SWIPE-UP" name="Btn" class="swipeBtn"> </td -->
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                                <tr>
+                                    <td> </td>
+                                    <td> </td>
+                                    <td> </td>
+                                    <td colspan="3"> <input type="submit" value="HOME" name="Btn" class="homeBtn"> </td>
+                                </tr>
+                                <tr>
+                                    <td> <input type="submit" value="SOUTHWEST-PREP" name="Btn" class="prepBtn"> </td>
+                                    <!-- td> <input type="submit" value="SOUTHWEST-DRAG" name="Btn" class="dragBtn"> </td -->
+                                    <!-- td> <input type="submit" value="SOUTHWEST-HIT" name="Btn" class="hitBtn"> </td -->
+                                    <td> </td>
+                                    <td> </td>
+                                    <td> </td>
+                                    <td> </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                    <td>
+                        <table class="angltTbl">
+                            <tbody>
+                                <tr>
+                                    <td> <input type="number" class="angleTxt" id="vertServoAngleTxt" name="vertServoAngle" value="VAR_VERT_SERVO_ANGLE"></td>
+                                    <td>
+                                        <input type="submit" value="vertServoAngle" name="ServoBtn" class="servoAngleBtn">
+                                        <div><input type="submit" value="VertUp" name="ServoBtn"> <input type="submit" value="VertDown"
+                                                name="ServoBtn"> </div>
+                                    </td>
+                                    <td>
+                                        <div id="slider-vert" class="sliders-horiz">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+
+                                    <td> <input type="number" class="angleTxt" id="elbowServoAngleTxt" name="elbowServoAngle"
+                                            value="VAR_ELBOW_SERVO_ANGLE"></td>
+                                    <td>
+                                        <input type="submit" value="elbowServoAngle" name="ServoBtn" class="servoAngleBtn">
+                                        <div><input type="submit" value="ElbowUp" name="ServoBtn"> <input type="submit" value="ElbowDown"
+                                                name="ServoBtn"> </div>
+                                        <td>
+                                            <div id="slider-elbow" class="sliders-horiz">
+                                            </div>
+                                        </td>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td> <input type="number" class="angleTxt" id="wristServoAngleTxt" name="wristServoAngle"
+                                            value="VAR_WRIST_SERVO_ANGLE"></td>
+                                    <td>
+                                        <input type="submit" value="wristServoAngle" name="ServoBtn" class="servoAngleBtn">
+                                        <div><input type="submit" value="WristUp" name="ServoBtn"> <input type="submit" value="WristDown"
+                                                name="ServoBtn"> </div>
+                                    </td>
+                                    <td>
+                                        <div id="slider-wrist" class="sliders-horiz">
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td> <input type="number" class="angleTxt" id="baseServoAngleTxt" name="baseServoAngle" value="VAR_BASE_SERVO_ANGLE"></td>
+                                    <td>
+                                        <input type="submit" value="baseServoAngle" name="ServoBtn" class="servoAngleBtn">
+                                        <div><input type="submit" value="BaseLeft" name="ServoBtn"> <input type="submit" value="BaseRight"
+                                                name="ServoBtn"> </div>
+                                    </td>
+                                    <td>
+                                        <div id="slider-base" class="sliders-horiz">
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td> <input type="number" class="angleTxt" id="spinServoAngleTxt" name="spinServoAngle" value="VAR_SPIN_SERVO_ANGLE"></td>
+                                    <td>
+                                        <input type="submit" value="spinServoAngle" name="ServoBtn" class="servoAngleBtn">
+                                        <div><input type="submit" value="spinLeft" name="ServoBtn"> <input type="submit" value="spinRight"
+                                                name="ServoBtn"> </div>
+                                    </td>
+                                    <td>
+                                        <div id="slider-spin" class="sliders-spin">
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td> <input type="number" class="angleTxt" id="gripServoAngleTxt" name="gripServoAngle" value="VAR_GRIP_SERVO_ANGLE"></td>
+                                    <td>
+                                        <input type="submit" value="gripServoAngle" name="ServoBtn" class="servoAngleBtn">
+                                        <div><input type="submit" value="gripLeft" name="ServoBtn"> <input type="submit" value="gripRight"
+                                                name="ServoBtn"> </div>
+                                    </td>
+                                    <td>
+                                        <div id="slider-grip" class="sliders-grip">
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td> <input type="number" class="angleTxt" id="dispenserServoAngleTxt" name="dispenserServoAngle" value="VAR_DISPENSER_SERVO_ANGLE"></td>
+                                    <td>
+                                        <input type="submit" value="dispenserServoAngle" name="ServoBtn" class="servoAngleBtn">
+                                        <div><input type="submit" value="dispenserLeft" name="ServoBtn"> <input type="submit" value="dispenserRight"
+                                                name="ServoBtn"> </div>
+                                    </td>
+                                    <td>
+                                        <div id="slider-dispenser" class="sliders-dispenser">
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr> </tr>
+            </tbody>
+        </table>
+        <table class="powerTbl">
+            <tbody>
+                <tr>
+                    <td> <input type="submit" value="Refresh" name="Btn" id="RefreshBtn"> </td>                    
+                    <td> <input type="submit" value="PowerOff" name="Btn" class="powerOffBtn"> </td>
+                    <td> <input type="submit" value="PowerOn" name="Btn" class="powerOnBtn"> </td>
+
+                    <td> <input type="submit" value="ResetTimer" name="Btn" class="ResetTimerBtn"> </td>
+
+                    <td><input type="input" value="VAR_CURRENT_BASE_TEMP" name="CurrentTemperature" class="Temperature" id="BaseTemperatureId"
+                            size="5" align="center" /></td>
+                    <td><input type="input" value="VAR_CURRENT_BASE_TEMP2" name="CurrentTemperature" class="Temperature" id="BaseTemperature2Id"
+                            size="5" align="center" /></td>
+                    <td> <input type="submit" value="GripStack" name="Btn" class="actionBtn"> </td>
+                    
+                    <td>  </td>
+                </tr>
+                <tr>
+                    <td> <input type="submit" value="DispenseAllPennies" name="Btn" class="correctionBtn"> </td>
+                    <td> <input type="submit" value="SingleDispensePenny" name="Btn" class="correctionBtn"> </td>
+                    <td> <input type="submit" value="Open-Gripper" name="Btn" class="correctionBtn"> </td>
+                    <td> <input type="submit" value="Toggle-Spin" name="Btn" class="correctionBtn"> </td>
+                </tr>
+                <tr>
+                    <td> Server Status: </td>
+                    <td colspan="9" id="MsgTxt"> VAR_SERVER_STATUS_MSG </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+</body>
+
+</html>
